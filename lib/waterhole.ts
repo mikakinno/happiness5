@@ -27,6 +27,23 @@ export function toWeatherKey(raw: string | undefined | null): WeatherKey | null 
   return null;
 }
 
+/* 歩数の表記揺れ（全角数字・カンマ区切り・「約8000歩」・「8000〜9000」
+   のようなレンジ表記など）を吸収する。全角数字を半角に直し、カンマを
+   取り除いたうえで、最初に現れる数値だけを歩数として採用する
+   （レンジ表記は控えめな見積もりになる）。変換できない・未入力の行は
+   0 として扱う ─ 未入力にペナルティを与えない、という原則8のため。
+   エラーを投げないこと。 */
+export function parseSteps(raw: string | undefined | null): number {
+  const hankaku = (raw ?? "")
+    .trim()
+    .replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0))
+    .replace(/,/g, "");
+  const m = hankaku.match(/\d+/);
+  if (!m) return 0;
+  const n = Number(m[0]);
+  return Number.isFinite(n) ? n : 0;
+}
+
 /* ------------------------------------------------------------
    生き物の出現条件
 
@@ -132,7 +149,7 @@ function shiftDays(ymd: string, delta: number): string {
 /* ------------------------------------------------------------
    入力
    ------------------------------------------------------------ */
-export type MindRow = { at: Date; name: string; weather: WeatherKey | null; comment: string };
+export type MindRow = { at: Date; name: string; weather: WeatherKey | null; comment: string; steps: number };
 export type ThanksRow = { at: Date; from: string; to: string; credo: string; message: string };
 
 export type Metrics = {
@@ -149,8 +166,8 @@ export type Metrics = {
 
 export const SPREAD_WINDOW_DAYS = 7;
 export const THANKS_WINDOW_DAYS = 30;
-export const STREAK_FULL = 55;   // この日数で水位が満杯
-export const LEVEL_FLOOR = 0.35; // 干上がらせない下限
+export const LEVEL_WINDOW_DAYS = 30; // 水位＝直近この日数のうち投稿があった日の割合
+export const LEVEL_FLOOR = 0.35;     // 干上がらせない下限
 
 export function computeMetrics(
   minds: MindRow[],
@@ -171,7 +188,7 @@ export function computeMetrics(
   week.forEach((m) => { if (m.weather) weatherBreakdown[m.weather]++; });
   const variety = (Object.values(weatherBreakdown) as number[]).filter((n) => n > 0).length;
 
-  /* 場のストリーク：誰か1人でも投稿した日が何日続いているか。
+  /* 場のストリーク：誰か1人でも投稿した日が何日続いているか（表示用）。
      今日まだ誰も来ていない場合は、昨日までで数える（今日を失敗にしない）。 */
   const activeDays = new Set(minds.map((m) => ymdJst(m.at)));
   let cursor = activeDays.has(today) ? today : shiftDays(today, -1);
@@ -182,17 +199,83 @@ export function computeMetrics(
     if (streak > 3650) break;
   }
 
+  /* 水位：直近 LEVEL_WINDOW_DAYS 日のうち、誰か1人でも投稿があった日の割合。
+     連続を要求しない ─ 14人規模だと週末で必ず途切れ、streak ベースだと
+     水位が下限に張り付いてしまうため（原則2：水場は干上がらない）。 */
+  const levelFrom = shiftDays(today, -(LEVEL_WINDOW_DAYS - 1));
+  const activeDaysInWindow = Array.from(activeDays).filter(
+    (d) => d >= levelFrom && d <= today
+  ).length;
+  const level = Math.max(LEVEL_FLOOR, Math.min(1, activeDaysInWindow / LEVEL_WINDOW_DAYS));
+
   return {
     memberTotal,
     spread,
     spreadRatio: memberTotal > 0 ? spread / memberTotal : 0,
     streak,
-    level: Math.max(LEVEL_FLOOR, Math.min(1, streak / STREAK_FULL)),
+    level,
     variety,
     weatherBreakdown,
     hasRain: weatherBreakdown.rain > 0,
     thanks: thanks.filter((t) => ymdJst(t.at) >= thanksFrom).length,
   };
+}
+
+/* ------------------------------------------------------------
+   育った緑（原則7）
+
+   積み上がるだけで、減らない。全期間が対象なので、
+   computeMetrics のような直近7日・30日の窓は掛けない。
+
+   与贈          緑への寄与
+   マインド投稿1件   1
+   ありがとうカード1件 3
+   歩数100,000歩    1
+   ------------------------------------------------------------ */
+export const GREEN_WEIGHT = {
+  mind: 1,
+  thanks: 3,
+  stepsPerUnit: 100_000,
+} as const;
+
+export const GREEN_STAGE_THRESHOLDS = [0, 30, 120, 300, 620, 1100, 1800] as const;
+
+export const GREEN_STAGE_NAMES = [
+  "裸地",
+  "まばらな草",
+  "草地",
+  "低木",
+  "アカシアが数本",
+  "林",
+  "水辺に葦、緑の帯",
+] as const;
+
+export type Green = { value: number; stage: number; stageName: string };
+
+export function computeGreen(minds: MindRow[], thanks: ThanksRow[]): Green {
+  const totalSteps = minds.reduce((sum, m) => sum + (m.steps || 0), 0);
+  const value =
+    minds.length * GREEN_WEIGHT.mind +
+    thanks.length * GREEN_WEIGHT.thanks +
+    totalSteps / GREEN_WEIGHT.stepsPerUnit;
+
+  let stage = 0;
+  for (let i = GREEN_STAGE_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (value >= GREEN_STAGE_THRESHOLDS[i]) {
+      stage = i;
+      break;
+    }
+  }
+  return { value, stage, stageName: GREEN_STAGE_NAMES[stage] };
+}
+
+/* みんなで歩いた距離（km）。合計のみを返し、個人別の歩数は
+   一切扱わない ─ 歩数は健康データであり、原則8のため。 */
+const METERS_PER_STEP = 0.7;
+
+export function totalWalkedKm(minds: MindRow[]): number {
+  const totalSteps = minds.reduce((sum, m) => sum + (m.steps || 0), 0);
+  return (totalSteps * METERS_PER_STEP) / 1000;
 }
 
 /* ------------------------------------------------------------

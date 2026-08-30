@@ -1,0 +1,184 @@
+import { useMemo } from "react";
+import { ymdJst, type PresentFauna, type TimeBand } from "../../lib/waterhole";
+import { C } from "./palette";
+import { Beast, type BeastSlot } from "./species";
+import { Acacia, FarHerd, Palm, Reed, REEDS, Shrub, SHRUBS } from "./vegetation";
+import { Mame, Kinako } from "./mascots";
+
+const MAX_DRAWN = 18;
+
+/* 見た目の配置だけに使う、日付シードの疑似乱数。
+   「頭数」を決める本物の乱数はサーバー側（lib/waterhole.ts の resolveFauna）
+   が持つ。ここでは同じ日なら誰が見ても同じ配置になる、という一貫性だけを担う。 */
+function seeded(seed: number) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646;
+}
+const dateSeed = (d: Date) => Number(ymdJst(d).replace(/-/g, ""));
+
+export type SceneProps = {
+  level: number;
+  stage: number;
+  present: PresentFauna[];
+  timeOfDay: TimeBand;
+  ripples: number[];
+  onSplash: () => void;
+};
+
+export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash }: SceneProps) {
+  const rnd = useMemo(() => seeded(dateSeed(new Date()) + 991), []);
+  const sky = {
+    dawn: ["#FFF3EC", "#FFFFFF"],
+    day: ["#EBF5F8", "#FFFFFF"],
+    dusk: ["#FFEDE0", "#FFFFFF"],
+    night: ["#EDEFF7", "#FFFFFF"],
+  }[timeOfDay];
+  const ws = 0.55 + level * 0.45;
+
+  /* 描画スロット：まず各種1体ずつ、残りを頭数の多い種で埋める */
+  const slots = useMemo<BeastSlot[]>(() => {
+    const r = seeded(dateSeed(new Date()) + 77);
+    const picks: PresentFauna[] = [];
+    present.forEach((f) => picks.push(f));
+    const extra: PresentFauna[] = [];
+    present.forEach((f) => { for (let i = 1; i < f.head; i++) extra.push(f); });
+    for (let i = extra.length - 1; i > 0; i--) {
+      const j = Math.floor(r() * (i + 1));
+      [extra[i], extra[j]] = [extra[j], extra[i]];
+    }
+    picks.push(...extra.slice(0, Math.max(0, MAX_DRAWN - picks.length)));
+
+    return picks
+      .map((f, i) => {
+        const depth = r();
+        const water = f.id === "croc" || f.id === "hippo";
+        return {
+          key: `${f.id}-${i}`,
+          kind: f.id,
+          anim: f.anim,
+          depth,
+          x: water ? 380 + r() * 150 : 42 + r() * 816,
+          y: water ? 316 + r() * 10 : 236 + depth * 132,
+          scale: (water ? 0.85 : 0.5 + depth * 0.72) * (f.id === "weaver" || f.id === "frog" ? 0.8 : 1),
+          delay: (i % 6) * 0.45,
+        };
+      })
+      .sort((a, b) => a.depth - b.depth);
+  }, [present]);
+
+  return (
+    <svg viewBox="0 0 900 400" className="w-full block" role="img" aria-label="みんなの水場">
+      <title>みんなの水場</title>
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={sky[0]} /><stop offset="100%" stopColor={sky[1]} /></linearGradient>
+        <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.sand} /><stop offset="100%" stopColor={C.sandDeep} /></linearGradient>
+        <radialGradient id="pool" cx="50%" cy="35%"><stop offset="0%" stopColor="#EEF8FA" /><stop offset="55%" stopColor={C.waterPale} /><stop offset="100%" stopColor={C.water} /></radialGradient>
+        <clipPath id="poolClip"><ellipse cx="450" cy="318" rx={190 * ws} ry={46 * ws} /></clipPath>
+      </defs>
+
+      <rect x="0" y="0" width="900" height="230" fill="url(#sky)" />
+      {timeOfDay === "night"
+        ? <g opacity="0.7"><circle cx="742" cy="52" r="17" fill="#F2EEDF" /><circle cx="734" cy="47" r="15" fill={sky[0]} /></g>
+        : <circle cx="742" cy="52" r={timeOfDay === "day" ? 22 : 27} fill={timeOfDay === "dusk" ? "#F6C193" : "#FAE0A4"} opacity="0.85" />}
+
+      <path d="M0 214 Q 220 200 470 212 T 900 204 L900 232 L0 232 Z" fill={C.hazeFar} opacity="0.55" />
+      {/* 遠景の緑の帯：最終段階で地平線まで緑になる */}
+      {stage >= 5 && (
+        <path d="M0 216 Q 240 204 480 214 T 900 208 L900 230 L0 230 Z"
+          fill={C.acacia} opacity={stage >= 6 ? 0.4 : 0.22} />
+      )}
+      <FarHerd />
+      <path d="M0 222 Q 450 208 900 222 L900 400 L0 400 Z" fill="url(#ground)" />
+
+      {/* 草：段階が上がるほど密になり、色が濃くなる */}
+      <g stroke={stage >= 3 ? C.acaciaDeep : stage >= 1 ? C.acacia : C.mud}
+        strokeWidth="2.2" strokeLinecap="round" fill="none" opacity={stage >= 1 ? 0.85 : 0.45}>
+        {Array.from({ length: [4, 22, 46, 66, 84, 104, 124][stage] }).map((_, i) => {
+          const x = 14 + ((rnd() * 880 + i * 47) % 878), y = 240 + rnd() * 146;
+          if (Math.abs(x - 450) < 208 * ws && y > 284) return null;
+          const h = 5 + rnd() * (6 + stage * 2.2);
+          return <path key={i} d={`M${x} ${y} q 3 ${-h / 2} 5 ${-h}`} />;
+        })}
+      </g>
+
+      {/* 低木 */}
+      {stage >= 3 && SHRUBS.slice(0, [0, 0, 0, 4, 7, 10, 13][stage]).map((p, i) => (
+        <Shrub key={i} x={p[0]} y={p[1]} s={p[2]} stage={stage} />
+      ))}
+
+      {/* 水際の葦 */}
+      {stage >= 6 && REEDS.map((p, i) => <Reed key={i} x={p[0]} y={p[1]} s={p[2]} flip={p[3]} />)}
+
+      {/* ナツメヤシ */}
+      {stage >= 5 && <Palm x={262} y={250} s={0.9} />}
+      {stage >= 6 && <Palm x={644} y={246} s={0.78} />}
+
+      {/* アカシア */}
+      {stage >= 4 && <Acacia x={78} y={254} s={0.95} stage={stage} />}
+      {stage >= 4 && <Acacia x={824} y={246} s={0.8} stage={stage} />}
+      {stage >= 5 && <Acacia x={176} y={236} s={0.56} stage={stage} />}
+      {stage >= 5 && <Acacia x={730} y={238} s={0.64} stage={stage} />}
+      {stage >= 6 && <Acacia x={352} y={230} s={0.44} stage={stage} />}
+      {stage >= 6 && <Acacia x={560} y={228} s={0.4} stage={stage} />}
+
+      <ellipse cx="450" cy="318" rx="212" ry="53" fill={C.mud} opacity="0.3" />
+      <ellipse cx="450" cy="318" rx={198 * (0.6 + ws * 0.4)} ry={49 * (0.6 + ws * 0.4)} fill={C.mud} opacity="0.34" />
+
+      <g onClick={onSplash} style={{ cursor: "pointer" }}>
+        <ellipse cx="450" cy="318" rx={190 * ws} ry={46 * ws} fill="url(#pool)" />
+        <g clipPath="url(#poolClip)">
+          <ellipse cx="450" cy="318" rx="30" ry="8" fill="none" stroke="#FFF" strokeWidth="1.5" opacity="0.75" className="amb1" />
+          <ellipse cx="450" cy="318" rx="30" ry="8" fill="none" stroke="#FFF" strokeWidth="1.3" opacity="0.6" className="amb2" />
+          {ripples.map((r) => <ellipse key={r} cx="450" cy="318" rx="8" ry="2" fill="none" stroke="#FFF" strokeWidth="2.6" className="splash" />)}
+        </g>
+        {ripples.map((r) => <circle key={`d${r}`} cx="450" cy="150" r="6" fill={C.water} className="drop" />)}
+      </g>
+
+      {slots.map(({ key, ...rest }) => <Beast key={key} {...rest} />)}
+
+      <g transform="translate(78 378) scale(.78)"><Mame /></g>
+      <g transform="translate(830 372) scale(.78)"><Kinako /></g>
+
+      <style>{`
+        /* SVGのtransform-originは既定でviewBox基準になるため、
+           回転する要素にはすべて transform-box:fill-box を指定して
+           その図形自身の付け根で回るようにする */
+        .a-sip,.a-peck,.a-sway,.swayt,.wag,.wag-cat{transform-box:fill-box}
+
+        .amb1{animation:amb 9s ease-out infinite}.amb2{animation:amb 9s ease-out infinite 4.5s}
+        @keyframes amb{0%{rx:6;ry:2;opacity:.8}100%{rx:${186 * ws};ry:${44 * ws};opacity:0}}
+        .splash{animation:splash 2.4s ease-out forwards}
+        @keyframes splash{0%{rx:5;ry:2;opacity:1;stroke-width:3}100%{rx:${188 * ws};ry:${45 * ws};opacity:0;stroke-width:.4}}
+        .drop{animation:drop .7s cubic-bezier(.5,0,.9,.4) forwards}
+        @keyframes drop{0%{cy:130;opacity:0}25%{opacity:1}100%{cy:314;opacity:0;r:11}}
+
+        .a-bob{animation:a-bob 7s ease-in-out infinite}
+        @keyframes a-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+        .a-sip{animation:a-sip 15s ease-in-out infinite;transform-origin:20% 100%}
+        @keyframes a-sip{0%,58%,100%{transform:rotate(0)}72%,88%{transform:rotate(8deg)}}
+        .a-sway{animation:a-sway 12s ease-in-out infinite;transform-origin:50% 100%}
+        @keyframes a-sway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg)}}
+        .a-peck{animation:a-peck 5.5s ease-in-out infinite;transform-origin:30% 100%}
+        @keyframes a-peck{0%,68%,100%{transform:rotate(0)}80%{transform:rotate(15deg)}}
+        .a-hop{animation:a-hop 6.5s ease-in-out infinite}
+        @keyframes a-hop{0%,78%,100%{transform:translateY(0)}86%{transform:translateY(-7px)}93%{transform:translateY(0)}}
+        .a-creep{animation:a-creep 80s linear infinite}
+        @keyframes a-creep{from{transform:translateX(-24px)}to{transform:translateX(24px)}}
+        .a-still{animation:a-still 14s ease-in-out infinite}
+        @keyframes a-still{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.2px)}}
+
+        .swayt{animation:a-sway 17s ease-in-out infinite;transform-origin:50% 100%}
+        .wag{animation:wag 2.4s ease-in-out infinite;transform-origin:100% 100%}
+        @keyframes wag{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(9deg)}}
+        .wag-cat{animation:wag-cat 9s ease-in-out infinite;transform-origin:0% 100%}
+        @keyframes wag-cat{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+        .farmove{animation:farmove 150s linear infinite}
+        @keyframes farmove{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+        @media (prefers-reduced-motion:reduce){
+          .amb1,.amb2,.splash,.drop,.a-bob,.a-sip,.a-sway,.a-peck,.a-hop,.a-creep,.a-still,.swayt,.wag,.wag-cat,.farmove{animation:none!important}
+        }
+      `}</style>
+    </svg>
+  );
+}

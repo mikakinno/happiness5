@@ -101,7 +101,7 @@ Google フォームで集めた5指標（Leadership・Communication・Mind・ES�
 | 歩数 100,000歩 | 1 |
 
 7段階（裸地／まばらな草／草地／低木／アカシアが数本／林／水辺に葦、緑の帯）。
-18人規模で1日およそ14ずつ積み上がり、最終段階まで約1年。
+14人規模で1日およそ14ずつ積み上がり、最終段階まで約1年。
 最初の1週間で目に見えて変わり、そこから先はゆっくりになる配分にしてある。
 序盤で何も起きないと続かないため、意図的に前半を詰めている。
 
@@ -143,27 +143,33 @@ Google フォームで集めた5指標（Leadership・Communication・Mind・ES�
 
 ## データの在り処
 
-Google スプレッドシート。**列構成は下記を前提に実装しているが、未検証。
-作業前に実際のシートを読んで確認し、違っていれば `lib/sheets.ts` を直すこと。**
+Google スプレッドシート。**マインド・ありがとうカード・メンバー名簿は3つの別ファイルに分かれている。**
+それぞれ `MIND_SHEET_ID` / `THANKS_SHEET_ID` / `ROSTER_SHEET_ID` で指定する
+（`lib/sheets.ts` 参照）。同一のサービスアカウントに3ファイルすべての閲覧権限が必要。
 
-### マインド
-`A` タイムスタンプ / `B` 名前 / `C` 心のお天気 / `D` コメント /
-`E` 以降に歩数・肝臓などの列がある
+タブ名は実際のシートで確認済み：マインドが「ハピネス」、ありがとうカードが
+「フォームの回答 1」、メンバー名簿が「シート1」（`TAB_MIND` / `TAB_THANKS` / `TAB_ROSTER`
+の既定値として `lib/sheets.ts` に反映済み）。
 
-**緑の計算に歩数が必要なので、歩数の列を特定して読むこと。**
-`lib/sheets.ts` の初版は `A:D` しか読んでいないので、実際のシートを見て範囲を広げる。
-歩数は空欄・全角数字・「8,000」のようなカンマ区切り・「約8000歩」などの
-表記揺れが混ざる可能性が高い。数値に変換できない行は 0 として扱い、
-エラーにしないこと（未入力にペナルティを与えない、という原則8のため）。
+**列構成は下記を前提に実装しているが、一部未検証。
+シートの実態と違っていれば `lib/sheets.ts` を直すこと。**
 
-### ありがとうカード
+### マインド（タブ名「ハピネス」）
+`A` タイムスタンプ / `B` 名前 / `C` 心のお天気 / `D` コメント / `E` 歩数
+
+歩数の列は `E` と確認済み。`lib/sheets.ts` は `A:E` を読み、`lib/waterhole.ts` の
+`parseSteps()` で数値化する。歩数は空欄・全角数字・「8,000」のようなカンマ区切り・
+「約8000歩」などの表記揺れが混ざる可能性が高く、数値に変換できない行は 0 として扱い、
+エラーにしない（未入力にペナルティを与えない、という原則8のため）。
+
+### ありがとうカード（タブ名「フォームの回答 1」）
 `A` タイムスタンプ / `B` あなたの名前 / `C` 送る相手の名前 /
 `D` クレド / `E` 想い / `F` メッセージ
 
 **`E` 列「想い」は画面に出さない。** 本人が自分のために書いた内心のメモという理解。
 表示するのは `F` 列のみ。この扱いは人間に再確認すること。
 
-### メンバー名簿
+### メンバー名簿（タブ名「シート1」）
 `A` 氏名 / `B` メールアドレス / `C` 種別 / `D` ステータス
 
 マインドシートにも、ありがとうカードシートにも**メールアドレスの列はない**。
@@ -237,11 +243,12 @@ components/Waterhole/   水場のSVG、生き物21種、まめ・きなこ
 ```
 GOOGLE_SERVICE_ACCOUNT_EMAIL=
 GOOGLE_PRIVATE_KEY=          # Vercel では改行が \n のまま入るので復元が必要
-HAPPINESS_SHEET_ID=
-ROSTER_SHEET_ID=             # 名簿が別ファイルの場合のみ
-TAB_MIND=マインド
-TAB_THANKS=ありがとうカード
-TAB_ROSTER=メンバー名簿
+MIND_SHEET_ID=               # ハピネス5（マインド）
+THANKS_SHEET_ID=             # ありがとうカード
+ROSTER_SHEET_ID=             # メンバー名簿
+TAB_MIND=ハピネス
+TAB_THANKS=フォームの回答 1
+TAB_ROSTER=シート1
 TEST_NAMES=
 NEXTAUTH_SECRET=
 NEXTAUTH_URL=
@@ -264,3 +271,13 @@ GOOGLE_CLIENT_SECRET=
 - SVGで回転させる要素には `transform-box: fill-box` を必ず指定する。
   既定の `view-box` 基準だと、図形自身ではなく画面全体を基準に回ってしまう
   （過去に犬のしっぽが体から外れる不具合を起こした）
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

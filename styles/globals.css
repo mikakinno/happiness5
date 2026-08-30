@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+body {
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+}
+
+.maru {
+  font-family: 'Zen Maru Gothic', sans-serif;
+}
+
+.hit {
+  transition: background 0.18s ease;
+}
+.hit:hover {
+  background: #F7F4EE;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2.5px solid #5FA9BC;
+  outline-offset: 2px;
+}

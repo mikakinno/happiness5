@@ -5,26 +5,31 @@
    ============================================================ */
 
 import { google } from "googleapis";
-import { parseSheetDate, toWeatherKey, type MindRow, type ThanksRow } from "./waterhole";
+import { parseSheetDate, toWeatherKey, parseSteps, type MindRow, type ThanksRow } from "./waterhole";
 
 /* ------------------------------------------------------------
    .env.local
 
    GOOGLE_SERVICE_ACCOUNT_EMAIL=xxx@xxx.iam.gserviceaccount.com
    GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-   HAPPINESS_SHEET_ID=1AbC...
-   ROSTER_SHEET_ID=1DeF...          # 名簿が別ファイルの場合。同一なら省略可
-   TAB_MIND=マインド
-   TAB_THANKS=ありがとうカード
-   TAB_ROSTER=メンバー名簿
+   MIND_SHEET_ID=1AbC...             # ハピネス5（マインド）
+   THANKS_SHEET_ID=1DeF...           # ありがとうカード
+   ROSTER_SHEET_ID=1GhI...           # メンバー名簿
+   TAB_MIND=ハピネス
+   TAB_THANKS=フォームの回答 1
+   TAB_ROSTER=シート1
    TEST_NAMES=テスト太郎,いしばしまりこ
+
+   3つとも別ファイルのスプレッドシート。同一サービスアカウントに
+   閲覧権限が付与されていること。タブ名は実際のシートに合わせて確認済み。
    ------------------------------------------------------------ */
 
-const SHEET_ID = process.env.HAPPINESS_SHEET_ID!;
-const ROSTER_ID = process.env.ROSTER_SHEET_ID || SHEET_ID;
-const TAB_MIND = process.env.TAB_MIND || "マインド";
-const TAB_THANKS = process.env.TAB_THANKS || "ありがとうカード";
-const TAB_ROSTER = process.env.TAB_ROSTER || "メンバー名簿";
+const MIND_SHEET_ID = process.env.MIND_SHEET_ID!;
+const THANKS_SHEET_ID = process.env.THANKS_SHEET_ID!;
+const ROSTER_SHEET_ID = process.env.ROSTER_SHEET_ID!;
+const TAB_MIND = process.env.TAB_MIND || "ハピネス";
+const TAB_THANKS = process.env.TAB_THANKS || "フォームの回答 1";
+const TAB_ROSTER = process.env.TAB_ROSTER || "シート1";
 
 const TEST_NAMES = new Set(
   (process.env.TEST_NAMES || "").split(",").map((s) => s.trim()).filter(Boolean)
@@ -55,13 +60,13 @@ async function readTable(spreadsheetId: string, range: string): Promise<string[]
 const isTest = (name: string) => TEST_NAMES.has((name || "").trim());
 
 /* ------------------------------------------------------------
-   メンバー名簿
+   メンバー名簿（タブ名「シート1」）
    A=氏名  B=メールアドレス  C=種別  D=ステータス
    ------------------------------------------------------------ */
 export type Member = { name: string; email: string; kind: string; status: string };
 
 export async function fetchRoster(): Promise<Member[]> {
-  const rows = await readTable(ROSTER_ID, `${TAB_ROSTER}!A:D`);
+  const rows = await readTable(ROSTER_SHEET_ID, `${TAB_ROSTER}!A:D`);
   return rows
     .map((r) => ({
       name: (r[0] || "").trim(),
@@ -84,29 +89,34 @@ export function nameByEmail(roster: Member[], email: string | null | undefined):
 }
 
 /* ------------------------------------------------------------
-   マインド
-   A=タイムスタンプ  B=名前  C=心のお天気  D=コメント
-   ※ 歩数・肝臓など後続列がある場合も、ここでは A:D だけ読む
+   マインド（タブ名「ハピネス」）
+   A=タイムスタンプ  B=名前  C=心のお天気  D=コメント  E=歩数
    ------------------------------------------------------------ */
 export async function fetchMinds(): Promise<MindRow[]> {
-  const rows = await readTable(SHEET_ID, `${TAB_MIND}!A:D`);
+  const rows = await readTable(MIND_SHEET_ID, `${TAB_MIND}!A:E`);
   return rows
     .map((r) => {
       const at = parseSheetDate(r[0]);
       const name = (r[1] || "").trim();
       if (!at || !name) return null;
-      return { at, name, weather: toWeatherKey(r[2]), comment: (r[3] || "").trim() };
+      return {
+        at,
+        name,
+        weather: toWeatherKey(r[2]),
+        comment: (r[3] || "").trim(),
+        steps: parseSteps(r[4]),
+      };
     })
     .filter((r): r is MindRow => r !== null && !isTest(r.name));
 }
 
 /* ------------------------------------------------------------
-   ありがとうカード
+   ありがとうカード（タブ名「フォームの回答 1」）
    A=タイムスタンプ  B=あなたの名前  C=送る相手の名前
    D=クレド  E=想い  F=メッセージ
    ------------------------------------------------------------ */
 export async function fetchThanks(): Promise<ThanksRow[]> {
-  const rows = await readTable(SHEET_ID, `${TAB_THANKS}!A:F`);
+  const rows = await readTable(THANKS_SHEET_ID, `${TAB_THANKS}!A:F`);
   return rows
     .map((r) => {
       const at = parseSheetDate(r[0]);

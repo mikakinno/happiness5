@@ -14,7 +14,8 @@ import { authOptions } from "./auth/[...nextauth]";
 import { fetchMinds, fetchThanks, fetchRoster, activeMembers, nameByEmail } from "../../lib/sheets";
 import {
   computeMetrics, resolveFauna, absentHints, timeBand, ymdJst,
-  WEATHER_LABEL, type Metrics, type PresentFauna, type AbsentFauna,
+  computeGreen, totalWalkedKm,
+  WEATHER_LABEL, type Metrics, type PresentFauna, type AbsentFauna, type Green,
 } from "../../lib/waterhole";
 
 const DIARY_DAYS = 7;
@@ -28,6 +29,8 @@ export type WaterholeResponse = {
   asOf: string;
   band: "dawn" | "day" | "dusk" | "night";
   metrics: Metrics;
+  green: Green;
+  totalKm: number;
   fauna: { present: PresentFauna[]; absent: AbsentFauna[]; hints: AbsentFauna[] };
   diary: { date: string; entries: DiaryEntry[] }[];
   viewer: { name: string | null; todayPosted: boolean };
@@ -46,6 +49,10 @@ async function buildShared(): Promise<Shared> {
   const metrics = computeMetrics(minds, thanks, memberTotal, now);
   const band = timeBand(now);
   const { present, absent } = resolveFauna(metrics, band, now);
+
+  // 緑は累積（全期間）。computeMetrics のような直近7日・30日の窓は掛けない。
+  const green = computeGreen(minds, thanks);
+  const totalKm = totalWalkedKm(minds);
 
   /* 日誌：直近7日。日付は新しい順、日の中は古い順に並べる */
   const today = ymdJst(now);
@@ -87,6 +94,8 @@ async function buildShared(): Promise<Shared> {
     asOf: now.toISOString(),
     band,
     metrics,
+    green,
+    totalKm,
     fauna: { present, absent, hints: absentHints(metrics, absent) },
     diary,
     todayNames,
