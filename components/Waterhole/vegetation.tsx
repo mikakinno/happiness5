@@ -21,10 +21,19 @@ export const SHRUBS: [number, number, number][] = [
 export const REEDS: [number, number, number, number][] = [
   [268, 322, 1.0, 0], [300, 330, 0.85, 1], [612, 326, 0.95, 0],
   [648, 318, 0.8, 1], [238, 312, 0.75, 0], [676, 334, 1.05, 1],
+  [286, 338, 0.9, 0], [336, 308, 0.7, 1], [590, 334, 0.85, 0],
+  [624, 306, 0.75, 1], [258, 300, 0.65, 0], [660, 300, 0.9, 1],
+];
+export const ACACIAS: [number, number, number][] = [
+  [78, 254, 0.95], [824, 246, 0.8], [176, 236, 0.56],
+  [730, 238, 0.64], [352, 230, 0.44],
+];
+export const PALMS: [number, number, number][] = [
+  [262, 250, 0.9], [644, 246, 0.78], [460, 238, 0.66],
 ];
 
 export function Acacia({ x, y, s, stage }: { x: number; y: number; s: number; stage: number }) {
-  const leaf = stage >= 6 ? C.acaciaDeep : stage >= 5 ? C.acacia : "#A2B08E";
+  const leaf = stage >= 4 ? C.acacia : stage >= 2 ? "#A2B08E" : "#C0B79F";
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
       <rect x="-2.5" y="-46" width="5" height="48" fill="#8B7355" />
@@ -37,7 +46,7 @@ export function Acacia({ x, y, s, stage }: { x: number; y: number; s: number; st
 }
 
 export function Shrub({ x, y, s, stage }: { x: number; y: number; s: number; stage: number }) {
-  const leaf = stage >= 5 ? C.acaciaDeep : C.acacia;
+  const leaf = stage >= 4 ? C.acacia : stage >= 2 ? "#A2B08E" : "#C0B79F";
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
       <path d="M-1 0 v-9 M-1 -5 l-5 -4 M-1 -6 l5 -5" stroke="#8B7355" strokeWidth="1.6" fill="none" strokeLinecap="round" />

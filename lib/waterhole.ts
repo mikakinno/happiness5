@@ -158,6 +158,7 @@ export type Metrics = {
   spreadRatio: number;
   streak: number;
   level: number;
+  levelDays: number; // 直近 LEVEL_WINDOW_DAYS 日のうち、投稿があった日数（表示用の実数。level は下限クランプ済みなのでこちらを使う）
   variety: number;
   weatherBreakdown: Record<WeatherKey, number>;
   hasRain: boolean;
@@ -214,6 +215,7 @@ export function computeMetrics(
     spreadRatio: memberTotal > 0 ? spread / memberTotal : 0,
     streak,
     level,
+    levelDays: activeDaysInWindow,
     variety,
     weatherBreakdown,
     hasRain: weatherBreakdown.rain > 0,
@@ -251,6 +253,30 @@ export const GREEN_STAGE_NAMES = [
 ] as const;
 
 export type Green = { value: number; stage: number; stageName: string };
+
+/* 段階ごとの植生の本数（草・低木・アカシア・ナツメヤシ・葦）と
+   遠景の緑の帯の濃さ。人間側で決めた表そのもの。ロジックは変えず、
+   ここが唯一の値の置き場所にする（Scene.tsx 側にバラバラに散らさない）。
+   段階ごとに必ず「見たことのないもの」を1つ足す（原則7）：
+   葦は段階2、アカシアは段階3、ナツメヤシは段階5で初登場する。 */
+export type StageVeg = {
+  grass: number;
+  shrub: number;
+  acacia: number;
+  palm: number;
+  reed: number;
+  farBand: number; // 遠景の緑の帯の不透明度
+};
+
+export const GREEN_STAGE_VEG: readonly StageVeg[] = [
+  { grass: 4,   shrub: 0, acacia: 0, palm: 0, reed: 0,  farBand: 0.12 },
+  { grass: 22,  shrub: 0, acacia: 0, palm: 0, reed: 0,  farBand: 0.16 },
+  { grass: 46,  shrub: 1, acacia: 0, palm: 0, reed: 2,  farBand: 0.22 },
+  { grass: 66,  shrub: 3, acacia: 1, palm: 0, reed: 4,  farBand: 0.30 },
+  { grass: 84,  shrub: 5, acacia: 3, palm: 0, reed: 6,  farBand: 0.40 },
+  { grass: 104, shrub: 7, acacia: 5, palm: 1, reed: 9,  farBand: 0.52 },
+  { grass: 124, shrub: 9, acacia: 5, palm: 3, reed: 12, farBand: 0.66 },
+] as const;
 
 export function computeGreen(minds: MindRow[], thanks: ThanksRow[]): Green {
   const totalSteps = minds.reduce((sum, m) => sum + (m.steps || 0), 0);

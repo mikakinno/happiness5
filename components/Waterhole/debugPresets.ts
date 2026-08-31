@@ -1,4 +1,4 @@
-import type { Metrics } from "../../lib/waterhole";
+import { LEVEL_WINDOW_DAYS, type Metrics } from "../../lib/waterhole";
 
 /* 「モックアップ確認用」の活性度トグルだけが使うプリセット。
    実データの metrics を差し替えて、参加率が低い／高いときの見た目を
@@ -21,6 +21,7 @@ export function presetMetrics(activity: Activity, memberTotal: number, streak: n
     spreadRatio: memberTotal > 0 ? spread / memberTotal : spreadRatio,
     streak,
     level: LEVEL[activity],
+    levelDays: Math.round(LEVEL[activity] * LEVEL_WINDOW_DAYS),
     variety,
     weatherBreakdown: {
       sun: variety >= 1 ? 1 : 0,
