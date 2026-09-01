@@ -154,7 +154,7 @@ export default function MinnaNoMizuba() {
           <h2 className="maru text-sm font-bold mb-3" style={{ color: C.inkSoft }}>この土地のいま</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Stat label="今週きた人" value={metrics.spread} unit={`/ ${metrics.memberTotal}人`} bar={metrics.spreadRatio} note="集まる種の数が決まります" />
-            <Stat label="直近30日で" value={metrics.levelDays} unit="日" bar={metrics.level} note="カバとワニは水位が高い日だけ" />
+            <Stat label="水位" value={`${metrics.levelDays} / 30`} unit="日" bar={metrics.level} note="直近30日のうち、誰かが来た日" />
             <Stat label="お天気の種類" value={metrics.variety} unit="/ 4" bar={metrics.variety / 4} note={metrics.variety >= 3 ? "臆病な生き物も降りてこられます" : "晴れに寄っています"} />
             <Stat label="めぐった感謝" value={metrics.thanks} unit="件" bar={Math.min(1, metrics.thanks / 40)} note="この30日ぶん" />
           </div>
