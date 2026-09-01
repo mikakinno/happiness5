@@ -5,7 +5,6 @@
    ============================================================ */
 
 import { google } from "googleapis";
-import { createPrivateKey, createSign } from "crypto";
 import { parseSheetDate, toWeatherKey, parseSteps, type MindRow, type ThanksRow } from "./waterhole";
 
 /* ------------------------------------------------------------
@@ -37,31 +36,10 @@ const TEST_NAMES = new Set(
 );
 
 function sheetsClient() {
-  const resolvedKey = (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
-
-  // TEMP DEBUG (DECODER routines::unsupported 切り分け用。確認後に削除すること)
-  console.log("[debug-node] version:", process.version, "openssl:", process.versions.openssl);
-  try {
-    createPrivateKey(resolvedKey);
-    console.log("[debug-node] createPrivateKey: OK");
-  } catch (e: any) {
-    console.log("[debug-node] createPrivateKey FAILED code:", e?.code, "message:", e?.message);
-  }
-  // jwa@2.0.1 (gtoken -> jws -> jwa) が実際に行うのと同じ呼び出し方を再現する
-  try {
-    const signer = createSign("RSA-SHA256");
-    signer.update("debug-node-sign-check");
-    signer.sign(resolvedKey, "base64");
-    console.log("[debug-node] createSign(RSA-SHA256).sign: OK");
-  } catch (e: any) {
-    console.log("[debug-node] createSign(RSA-SHA256).sign FAILED code:", e?.code, "message:", e?.message);
-  }
-  // END TEMP DEBUG
-
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     // Vercel の環境変数では改行が \n のまま入るため復元する
-    key: resolvedKey,
+    key: (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
   return google.sheets({ version: "v4", auth });
