@@ -54,6 +54,10 @@ async function buildShared(): Promise<Shared> {
   const green = computeGreen(minds, thanks);
   const totalKm = totalWalkedKm(minds);
 
+  // TEMP DEBUG (stageがSceneまで届いているか切り分け用。確認後に削除すること)
+  console.log("[debug-green] minds:", minds.length, "thanks:", thanks.length,
+    "green.value:", green.value, "green.stage:", green.stage, "green.stageName:", green.stageName);
+
   /* 日誌：直近7日。日付は新しい順、日の中は古い順に並べる */
   const today = ymdJst(now);
   const from = ymdJst(new Date(new Date(`${today}T12:00:00+09:00`).getTime() - (DIARY_DAYS - 1) * 86400000));
@@ -125,6 +129,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ...shared,
       viewer: { name, todayPosted: !!name && todayNames.has(name) },
     };
+
+    // TEMP DEBUG (確認後に削除すること)
+    console.log("[debug-green] response body.green:", JSON.stringify(body.green), "cacheAgeMs:", Date.now() - cache.at);
 
     // 個人依存の項目を含むので共有キャッシュには載せない
     res.setHeader("Cache-Control", "private, no-store");

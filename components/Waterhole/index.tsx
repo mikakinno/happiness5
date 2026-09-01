@@ -57,6 +57,11 @@ export default function MinnaNoMizuba() {
   const stage = greenStageOverride ?? data.green.stage;
   const overrideActive = timeOverride !== null || activityOverride !== null;
 
+  // TEMP DEBUG (確認後に削除すること)
+  if (typeof window !== "undefined") {
+    console.log("[debug-green-client] data.green:", data.green, "greenStageOverride:", greenStageOverride, "stage passed to Scene:", stage);
+  }
+
   const fauna = overrideActive
     ? (() => {
         const { present, absent } = resolveFauna(metrics, band);
