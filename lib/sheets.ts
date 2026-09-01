@@ -5,7 +5,7 @@
    ============================================================ */
 
 import { google } from "googleapis";
-import { createPrivateKey } from "crypto";
+import { createPrivateKey, createSign } from "crypto";
 import { parseSheetDate, toWeatherKey, parseSteps, type MindRow, type ThanksRow } from "./waterhole";
 
 /* ------------------------------------------------------------
@@ -46,6 +46,15 @@ function sheetsClient() {
     console.log("[debug-node] createPrivateKey: OK");
   } catch (e: any) {
     console.log("[debug-node] createPrivateKey FAILED code:", e?.code, "message:", e?.message);
+  }
+  // jwa@2.0.1 (gtoken -> jws -> jwa) が実際に行うのと同じ呼び出し方を再現する
+  try {
+    const signer = createSign("RSA-SHA256");
+    signer.update("debug-node-sign-check");
+    signer.sign(resolvedKey, "base64");
+    console.log("[debug-node] createSign(RSA-SHA256).sign: OK");
+  } catch (e: any) {
+    console.log("[debug-node] createSign(RSA-SHA256).sign FAILED code:", e?.code, "message:", e?.message);
   }
   // END TEMP DEBUG
 
