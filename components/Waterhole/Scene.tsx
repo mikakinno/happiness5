@@ -101,8 +101,9 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
         : <circle cx="742" cy="52" r={timeOfDay === "day" ? 22 : 27} fill={timeOfDay === "dusk" ? "#F6C193" : "#FAE0A4"} opacity="0.85" />}
 
       <path d="M0 214 Q 220 200 470 212 T 900 204 L900 232 L0 232 Z" fill={C.hazeFar} opacity="0.55" />
-      {/* 遠景の緑の帯：段階が上がるほど地平線が濃く緑になる */}
-      <path d="M0 216 Q 240 204 480 214 T 900 208 L900 230 L0 230 Z" fill={C.acacia} opacity={veg.farBand} />
+      {/* 遠景の緑の帯：奥は淡く。低木・アカシアと同じ緑にしないことで
+          手前ほど濃い、という奥行きを保つ */}
+      <path d="M0 216 Q 240 204 480 214 T 900 208 L900 230 L0 230 Z" fill={C.acaciaPale} opacity={veg.farBand} />
       <FarHerd />
       <path d="M0 222 Q 450 208 900 222 L900 400 L0 400 Z" fill="url(#ground)" />
 

@@ -24,23 +24,26 @@ export const REEDS: [number, number, number, number][] = [
   [286, 338, 0.9, 0], [336, 308, 0.7, 1], [590, 334, 0.85, 0],
   [624, 306, 0.75, 1], [258, 300, 0.65, 0], [660, 300, 0.9, 1],
 ];
+/* 低木のクラスターと重ならない隙間に立たせる。丈も高くしてあるので、
+   低木のすぐ隣だと影が重なって見づらい ── 少し離す */
 export const ACACIAS: [number, number, number][] = [
-  [78, 254, 0.95], [824, 246, 0.8], [176, 236, 0.56],
-  [730, 238, 0.64], [352, 230, 0.44],
+  [101, 244, 0.85], [643, 238, 0.7], [460, 226, 0.62],
+  [820, 230, 0.5], [205, 250, 0.56],
 ];
 export const PALMS: [number, number, number][] = [
   [262, 250, 0.9], [644, 246, 0.78], [460, 238, 0.66],
 ];
 
 export function Acacia({ x, y, s, stage }: { x: number; y: number; s: number; stage: number }) {
-  const leaf = stage >= 4 ? C.acacia : stage >= 2 ? "#A2B08E" : "#C0B79F";
+  // 低木・遠景の緑帯より濃く、はっきり分かる色にする（見上げる木、という描き方）
+  const leaf = stage >= 4 ? C.acaciaDeep : "#748563";
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
-      <rect x="-2.5" y="-46" width="5" height="48" fill="#8B7355" />
-      <path d="M0 -44 l-16 -12 M0 -44 l17 -14 M0 -50 l-9 -12" stroke="#8B7355" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-      <ellipse cx="0" cy="-62" rx="42" ry="13" fill={leaf} />
-      <ellipse cx="-16" cy="-56" rx="24" ry="9" fill={leaf} opacity="0.9" />
-      <ellipse cx="18" cy="-57" rx="26" ry="9" fill={leaf} opacity="0.85" />
+      <rect x="-2.5" y="-70" width="5" height="72" fill="#8B7355" />
+      <path d="M0 -66 l-18 -14 M0 -66 l19 -16 M0 -74 l-10 -14" stroke="#8B7355" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+      <ellipse cx="0" cy="-92" rx="46" ry="14" fill={leaf} />
+      <ellipse cx="-18" cy="-85" rx="26" ry="10" fill={leaf} opacity="0.9" />
+      <ellipse cx="20" cy="-86" rx="28" ry="10" fill={leaf} opacity="0.85" />
     </g>
   );
 }

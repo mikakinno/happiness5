@@ -5,7 +5,7 @@ export const C = {
   ink: "#3A342B", inkSoft: "#8A8073",
   water: "#5FA9BC", waterPale: "#CFE7EC",
   sand: "#EDDFC7", sandDeep: "#D3BF9C", mud: "#BCA381",
-  acacia: "#8C9E77", acaciaDeep: "#5F7355", hazeFar: "#DAD3C5",
+  acacia: "#8C9E77", acaciaDeep: "#5F7355", acaciaPale: "#C0CAB4", hazeFar: "#DAD3C5",
   mame: "#C89F72", kinako: "#E8CFA9",
 } as const;
 
