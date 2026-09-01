@@ -5,6 +5,7 @@
    ============================================================ */
 
 import { google } from "googleapis";
+import { createPrivateKey } from "crypto";
 import { parseSheetDate, toWeatherKey, parseSteps, type MindRow, type ThanksRow } from "./waterhole";
 
 /* ------------------------------------------------------------
@@ -36,10 +37,22 @@ const TEST_NAMES = new Set(
 );
 
 function sheetsClient() {
+  const resolvedKey = (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
+
+  // TEMP DEBUG (DECODER routines::unsupported 切り分け用。確認後に削除すること)
+  console.log("[debug-node] version:", process.version, "openssl:", process.versions.openssl);
+  try {
+    createPrivateKey(resolvedKey);
+    console.log("[debug-node] createPrivateKey: OK");
+  } catch (e: any) {
+    console.log("[debug-node] createPrivateKey FAILED code:", e?.code, "message:", e?.message);
+  }
+  // END TEMP DEBUG
+
   const auth = new google.auth.JWT({
     email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     // Vercel の環境変数では改行が \n のまま入るため復元する
-    key: (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+    key: resolvedKey,
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
   return google.sheets({ version: "v4", auth });
