@@ -107,14 +107,27 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
       <FarHerd />
       <path d="M0 222 Q 450 208 900 222 L900 400 L0 400 Z" fill="url(#ground)" />
 
-      {/* 草：段階が上がるほど密になり、色が濃くなる */}
+      {/* 草：根元から3〜5本が扇状に広がる「株」として描く。
+          veg.grass は本数ではなく株の数（段階が上がるほど株が増え、色も濃くなる） */}
       <g stroke={stage >= 3 ? C.acaciaDeep : stage >= 1 ? C.acacia : C.mud}
         strokeWidth="2.2" strokeLinecap="round" fill="none" opacity={stage >= 1 ? 0.85 : 0.45}>
         {Array.from({ length: veg.grass }).map((_, i) => {
           const x = 14 + ((rnd() * 880 + i * 47) % 878), y = 240 + rnd() * 146;
           if (Math.abs(x - 450) < 208 * ws && y > 284) return null;
-          const h = 5 + rnd() * (6 + stage * 2.2);
-          return <path key={i} d={`M${x} ${y} q 3 ${-h / 2} 5 ${-h}`} />;
+          const blades = 3 + Math.floor(rnd() * 3); // 1株あたり3〜5本
+          const fan = 0.62; // 扇の開き角（片側、ラジアン）
+          return (
+            <g key={i}>
+              {Array.from({ length: blades }).map((_, j) => {
+                const theta = blades === 1 ? 0 : -fan + (fan * 2 * j) / (blades - 1) + (rnd() - 0.5) * 0.18;
+                const h = 5 + rnd() * (6 + stage * 2.2);
+                const sx = Math.sin(theta), cs = Math.cos(theta);
+                const ex = x + h * sx, ey = y - h * cs;
+                const mx = x + h * 0.55 * sx + h * 0.14 * cs, my = y - h * 0.55 * cs + h * 0.14 * sx;
+                return <path key={j} d={`M${x} ${y} Q${mx.toFixed(1)} ${my.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`} />;
+              })}
+            </g>
+          );
         })}
       </g>
 

@@ -39,11 +39,17 @@ export function Acacia({ x, y, s, stage }: { x: number; y: number; s: number; st
   const leaf = stage >= 4 ? C.acaciaDeep : "#748563";
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
-      <rect x="-2.5" y="-70" width="5" height="72" fill="#8B7355" />
-      <path d="M0 -66 l-18 -14 M0 -66 l19 -16 M0 -74 l-10 -14" stroke="#8B7355" strokeWidth="2.6" fill="none" strokeLinecap="round" />
-      <ellipse cx="0" cy="-92" rx="46" ry="14" fill={leaf} />
-      <ellipse cx="-18" cy="-85" rx="26" ry="10" fill={leaf} opacity="0.9" />
-      <ellipse cx="20" cy="-86" rx="28" ry="10" fill={leaf} opacity="0.85" />
+      <rect x="-3.5" y="-120" width="7" height="122" fill="#8B7355" />
+      <path d="M0 -108 l-24 -20 M0 -108 l25 -22 M0 -118 l-13 -20" stroke="#8B7355" strokeWidth="3" fill="none" strokeLinecap="round" />
+      {/* 樹冠：円を複数重ねた、もこもこした丸い塊 */}
+      <g fill={leaf}>
+        <circle cx="0" cy="-140" r="34" />
+        <circle cx="-28" cy="-128" r="26" opacity="0.94" />
+        <circle cx="30" cy="-130" r="27" opacity="0.92" />
+        <circle cx="-16" cy="-158" r="27" opacity="0.96" />
+        <circle cx="18" cy="-156" r="25" opacity="0.94" />
+        <circle cx="0" cy="-172" r="20" opacity="0.9" />
+      </g>
     </g>
   );
 }

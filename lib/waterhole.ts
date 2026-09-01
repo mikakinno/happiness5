@@ -258,7 +258,11 @@ export type Green = { value: number; stage: number; stageName: string };
    遠景の緑の帯の濃さ。人間側で決めた表そのもの。ロジックは変えず、
    ここが唯一の値の置き場所にする（Scene.tsx 側にバラバラに散らさない）。
    段階ごとに必ず「見たことのないもの」を1つ足す（原則7）：
-   葦は段階2、アカシアは段階3、ナツメヤシは段階5で初登場する。 */
+   葦は段階2、アカシアは段階3、ナツメヤシは段階5で初登場する。
+
+   grass は「株の数」（1株＝根元から3〜5本が扇状に生える）。以前は
+   1本＝1本の値だったが、株として描き直すのに合わせて本数ベースの
+   値を株数ベースに引き直した（段階4で約20株、というのが人間側の指定）。 */
 export type StageVeg = {
   grass: number;
   shrub: number;
@@ -269,13 +273,13 @@ export type StageVeg = {
 };
 
 export const GREEN_STAGE_VEG: readonly StageVeg[] = [
-  { grass: 4,   shrub: 0, acacia: 0, palm: 0, reed: 0,  farBand: 0.12 },
-  { grass: 22,  shrub: 0, acacia: 0, palm: 0, reed: 0,  farBand: 0.16 },
-  { grass: 46,  shrub: 1, acacia: 0, palm: 0, reed: 2,  farBand: 0.22 },
-  { grass: 66,  shrub: 3, acacia: 1, palm: 0, reed: 4,  farBand: 0.30 },
-  { grass: 84,  shrub: 5, acacia: 3, palm: 0, reed: 6,  farBand: 0.40 },
-  { grass: 104, shrub: 7, acacia: 5, palm: 1, reed: 9,  farBand: 0.52 },
-  { grass: 124, shrub: 9, acacia: 5, palm: 3, reed: 12, farBand: 0.66 },
+  { grass: 1,  shrub: 0, acacia: 0, palm: 0, reed: 0,  farBand: 0.12 },
+  { grass: 5,  shrub: 0, acacia: 0, palm: 0, reed: 0,  farBand: 0.16 },
+  { grass: 11, shrub: 1, acacia: 0, palm: 0, reed: 2,  farBand: 0.22 },
+  { grass: 16, shrub: 3, acacia: 1, palm: 0, reed: 4,  farBand: 0.30 },
+  { grass: 20, shrub: 5, acacia: 3, palm: 0, reed: 6,  farBand: 0.40 },
+  { grass: 25, shrub: 7, acacia: 5, palm: 1, reed: 9,  farBand: 0.52 },
+  { grass: 30, shrub: 9, acacia: 5, palm: 3, reed: 12, farBand: 0.66 },
 ] as const;
 
 export function computeGreen(minds: MindRow[], thanks: ThanksRow[]): Green {
