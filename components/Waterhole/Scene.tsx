@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { GREEN_STAGE_VEG, ymdJst, type PresentFauna, type TimeBand } from "../../lib/waterhole";
 import { C } from "./palette";
 import { Beast, type BeastSlot } from "./species";
-import { Acacia, ACACIAS, FarHerd, PALMS, Palm, REEDS, Reed, Shrub, SHRUBS } from "./vegetation";
+import { Acacia, ACACIAS, FarHerd, PALMS, Palm, REEDS, Reed, Shrub, SHRUBS, Tuft } from "./vegetation";
 import { Mame, Kinako } from "./mascots";
 
 const MAX_DRAWN = 18;
@@ -108,26 +108,28 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
       <path d="M0 222 Q 450 208 900 222 L900 400 L0 400 Z" fill="url(#ground)" />
 
       {/* 草：根元から3〜5本が扇状に広がる「株」として描く。
-          veg.grass は本数ではなく株の数（段階が上がるほど株が増え、色も濃くなる） */}
+          veg.grass は本数ではなく株の数（段階が上がるほど株が増え、色も濃くなる）。
+          陸地にランダムに散らす分と、池のふちに帯状に集める分の二本立て。
+          水面の上には生やさないが、除外になった株は陸の別の場所に振り直す
+          （水辺の帯は別枠なので、除外分を捨てずに済む）。 */}
       <g stroke={stage >= 3 ? C.acaciaDeep : stage >= 1 ? C.acacia : C.mud}
         strokeWidth="2.2" strokeLinecap="round" fill="none" opacity={stage >= 1 ? 0.85 : 0.45}>
         {Array.from({ length: veg.grass }).map((_, i) => {
-          const x = 14 + ((rnd() * 880 + i * 47) % 878), y = 240 + rnd() * 146;
-          if (Math.abs(x - 450) < 208 * ws && y > 284) return null;
-          const blades = 3 + Math.floor(rnd() * 3); // 1株あたり3〜5本
-          const fan = 0.62; // 扇の開き角（片側、ラジアン）
-          return (
-            <g key={i}>
-              {Array.from({ length: blades }).map((_, j) => {
-                const theta = blades === 1 ? 0 : -fan + (fan * 2 * j) / (blades - 1) + (rnd() - 0.5) * 0.18;
-                const h = 5 + rnd() * (6 + stage * 2.2);
-                const sx = Math.sin(theta), cs = Math.cos(theta);
-                const ex = x + h * sx, ey = y - h * cs;
-                const mx = x + h * 0.55 * sx + h * 0.14 * cs, my = y - h * 0.55 * cs + h * 0.14 * sx;
-                return <path key={j} d={`M${x} ${y} Q${mx.toFixed(1)} ${my.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`} />;
-              })}
-            </g>
-          );
+          let x = 0, y = 0;
+          for (let tries = 0; tries < 6; tries++) {
+            x = 14 + ((rnd() * 880 + i * 47) % 878);
+            y = 240 + rnd() * 146;
+            if (!(Math.abs(x - 450) < 208 * ws && y > 284)) break;
+          }
+          return <Tuft key={i} x={x} y={y} stage={stage} rnd={rnd} />;
+        })}
+        {/* 水辺の帯：池の外周のすぐ外側に、角度を振って並べる。段階が上がるほど密になる */}
+        {Array.from({ length: Math.round(veg.grass * 0.6) }).map((_, i) => {
+          const angle = rnd() * Math.PI * 2;
+          const spread = 1.03 + rnd() * 0.15; // 池の縁から3〜18%外側
+          const x = 450 + 190 * ws * spread * Math.cos(angle);
+          const y = 318 + 46 * ws * spread * Math.sin(angle);
+          return <Tuft key={`w${i}`} x={x} y={y} stage={stage} rnd={rnd} />;
         })}
       </g>
 

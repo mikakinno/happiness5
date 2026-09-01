@@ -54,6 +54,25 @@ export function Acacia({ x, y, s, stage }: { x: number; y: number; s: number; st
   );
 }
 
+/* 草の株：根元から3〜5本を扇状に広げる。色や太さは呼び出し側の <g stroke=...>
+   に任せ、ここではパスの形だけを作る。 */
+export function Tuft({ x, y, stage, rnd }: { x: number; y: number; stage: number; rnd: () => number }) {
+  const blades = 3 + Math.floor(rnd() * 3); // 1株あたり3〜5本
+  const fan = 0.62; // 扇の開き角（片側、ラジアン）
+  return (
+    <g>
+      {Array.from({ length: blades }).map((_, j) => {
+        const theta = blades === 1 ? 0 : -fan + (fan * 2 * j) / (blades - 1) + (rnd() - 0.5) * 0.18;
+        const h = 5 + rnd() * (6 + stage * 2.2);
+        const sx = Math.sin(theta), cs = Math.cos(theta);
+        const ex = x + h * sx, ey = y - h * cs;
+        const mx = x + h * 0.55 * sx + h * 0.14 * cs, my = y - h * 0.55 * cs + h * 0.14 * sx;
+        return <path key={j} d={`M${x} ${y} Q${mx.toFixed(1)} ${my.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`} />;
+      })}
+    </g>
+  );
+}
+
 export function Shrub({ x, y, s, stage }: { x: number; y: number; s: number; stage: number }) {
   const leaf = stage >= 4 ? C.acacia : stage >= 2 ? "#A2B08E" : "#C0B79F";
   return (
