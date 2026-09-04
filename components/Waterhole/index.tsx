@@ -57,11 +57,6 @@ export default function MinnaNoMizuba() {
   const stage = greenStageOverride ?? data.green.stage;
   const overrideActive = timeOverride !== null || activityOverride !== null;
 
-  // TEMP DEBUG (確認後に削除すること)
-  if (typeof window !== "undefined") {
-    console.log("[debug-green-client] data.green:", data.green, "greenStageOverride:", greenStageOverride, "stage passed to Scene:", stage);
-  }
-
   const fauna = overrideActive
     ? (() => {
         const { present, absent } = resolveFauna(metrics, band);
@@ -144,15 +139,29 @@ export default function MinnaNoMizuba() {
               </div>
             </div>
           ) : (
-            <button onClick={splash} className="rounded-xl px-5 py-4 text-left text-white" style={{ background: C.water }}>
+            <a
+              href={process.env.NEXT_PUBLIC_FORM_MIND}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={splash}
+              className="rounded-xl px-5 py-4 text-left text-white block min-h-[64px]"
+              style={{ background: C.water }}
+            >
               <span className="maru block text-base font-bold">今日の一滴を落とす</span>
               <span className="block text-xs opacity-90 mt-1">心のお天気をひとつ。水位が上がります</span>
-            </button>
+            </a>
           )}
-          <button onClick={splash} className="rounded-xl px-5 py-4 text-left border" style={{ borderColor: C.line }}>
+          <a
+            href={process.env.NEXT_PUBLIC_FORM_THANKS}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={splash}
+            className="rounded-xl px-5 py-4 text-left border block min-h-[64px]"
+            style={{ borderColor: C.line }}
+          >
             <span className="maru block text-base font-bold">ありがとうを贈る</span>
             <span className="block text-xs mt-1" style={{ color: C.inkSoft }}>いったん水に還って、土地ぜんたいに巡ります</span>
-          </button>
+          </a>
         </section>
 
         <section className="mt-8">

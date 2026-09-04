@@ -254,6 +254,8 @@ NEXTAUTH_SECRET=
 NEXTAUTH_URL=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+NEXT_PUBLIC_FORM_MIND=      # マインド投稿フォームのURL（「今日の一滴を落とす」）
+NEXT_PUBLIC_FORM_THANKS=    # ありがとうカードフォームのURL（「ありがとうを贈る」）
 ```
 
 **`.env.local` を絶対にコミットしない。** `.gitignore` に `.env*.local` があることを
