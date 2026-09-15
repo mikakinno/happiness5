@@ -27,8 +27,8 @@ export const REEDS: [number, number, number, number][] = [
 /* 低木のクラスターと重ならない隙間に立たせる。丈も高くしてあるので、
    低木のすぐ隣だと影が重なって見づらい ── 少し離す */
 export const ACACIAS: [number, number, number][] = [
-  [101, 244, 0.85], [643, 238, 0.7], [460, 226, 0.62],
-  [820, 230, 0.5], [205, 250, 0.56],
+  [101, 296, 0.85], [643, 288, 0.7], [460, 282, 0.62],
+  [820, 284, 0.5], [205, 300, 0.56],
 ];
 export const PALMS: [number, number, number][] = [
   [262, 250, 0.9], [644, 246, 0.78], [460, 238, 0.66],
@@ -39,16 +39,16 @@ export function Acacia({ x, y, s, stage }: { x: number; y: number; s: number; st
   const leaf = stage >= 4 ? C.acaciaDeep : "#748563";
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
-      <rect x="-3.5" y="-120" width="7" height="122" fill="#8B7355" />
-      <path d="M0 -108 l-24 -20 M0 -108 l25 -22 M0 -118 l-13 -20" stroke="#8B7355" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <rect x="-3.5" y="-90" width="7" height="92" fill="#8B7355" />
+      <path d="M0 -78 l-24 -20 M0 -78 l25 -22 M0 -88 l-13 -20" stroke="#8B7355" strokeWidth="3" fill="none" strokeLinecap="round" />
       {/* 樹冠：円を複数重ねた、もこもこした丸い塊 */}
       <g fill={leaf}>
-        <circle cx="0" cy="-140" r="34" />
-        <circle cx="-28" cy="-128" r="26" opacity="0.94" />
-        <circle cx="30" cy="-130" r="27" opacity="0.92" />
-        <circle cx="-16" cy="-158" r="27" opacity="0.96" />
-        <circle cx="18" cy="-156" r="25" opacity="0.94" />
-        <circle cx="0" cy="-172" r="20" opacity="0.9" />
+        <circle cx="0" cy="-110" r="34" />
+        <circle cx="-28" cy="-98" r="26" opacity="0.94" />
+        <circle cx="30" cy="-100" r="27" opacity="0.92" />
+        <circle cx="-16" cy="-128" r="27" opacity="0.96" />
+        <circle cx="18" cy="-126" r="25" opacity="0.94" />
+        <circle cx="0" cy="-142" r="20" opacity="0.9" />
       </g>
     </g>
   );
