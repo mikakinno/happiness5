@@ -86,7 +86,7 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
   }, [present]);
 
   return (
-    <svg viewBox="0 0 900 400" width="900" height="400" className="w-full h-auto block" role="img" aria-label="みんなの水場">
+    <svg viewBox="0 0 900 400" className="w-full block" role="img" aria-label="みんなの水場">
       <title>みんなの水場</title>
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={sky[0]} /><stop offset="100%" stopColor={sky[1]} /></linearGradient>
@@ -144,11 +144,6 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
       {/* ナツメヤシ */}
       {PALMS.slice(0, veg.palm).map((p, i) => <Palm key={i} x={p[0]} y={p[1]} s={p[2]} />)}
 
-      {/* アカシア */}
-      {ACACIAS.slice(0, veg.acacia).map((p, i) => (
-        <Acacia key={i} x={p[0]} y={p[1]} s={p[2]} stage={stage} />
-      ))}
-
       <ellipse cx="450" cy="318" rx="212" ry="53" fill={C.mud} opacity="0.3" />
       <ellipse cx="450" cy="318" rx={198 * (0.6 + ws * 0.4)} ry={49 * (0.6 + ws * 0.4)} fill={C.mud} opacity="0.34" />
 
@@ -161,6 +156,11 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
         </g>
         {ripples.map((r) => <circle key={`d${r}`} cx="450" cy="150" r="6" fill={C.water} className="drop" />)}
       </g>
+
+      {/* アカシア：泥だまり・水場より後に描き、上から覆われないようにする */}
+      {ACACIAS.slice(0, veg.acacia).map((p, i) => (
+        <Acacia key={i} x={p[0]} y={p[1]} s={p[2]} stage={stage} />
+      ))}
 
       {slots.map(({ key, ...rest }) => <Beast key={key} {...rest} />)}
 
