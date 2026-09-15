@@ -86,7 +86,7 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
   }, [present]);
 
   return (
-    <svg viewBox="0 0 900 400" className="w-full block" role="img" aria-label="みんなの水場">
+    <svg viewBox="0 0 900 400" width="900" height="400" className="w-full h-auto block" role="img" aria-label="みんなの水場">
       <title>みんなの水場</title>
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={sky[0]} /><stop offset="100%" stopColor={sky[1]} /></linearGradient>
