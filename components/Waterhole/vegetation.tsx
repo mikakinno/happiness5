@@ -26,9 +26,9 @@ export const REEDS: [number, number, number, number][] = [
 ];
 /* 低木のクラスターと重ならない隙間に立たせる。丈も高くしてあるので、
    低木のすぐ隣だと影が重なって見づらい ── 少し離す */
-// TEMP DEBUG: 切り分け用に左下の何もない場所に1本だけ置く（確認後に元へ戻すこと）
 export const ACACIAS: [number, number, number][] = [
-  [80, 380, 1.0],
+  [101, 296, 0.85], [643, 288, 0.7], [460, 282, 0.62],
+  [820, 284, 0.5], [205, 300, 0.56],
 ];
 export const PALMS: [number, number, number][] = [
   [262, 250, 0.9], [644, 246, 0.78], [460, 238, 0.66],
@@ -38,17 +38,19 @@ export function Acacia({ x, y, s, stage }: { x: number; y: number; s: number; st
   // 低木・遠景の緑帯より濃く、はっきり分かる色にする（見上げる木、という描き方）
   const leaf = stage >= 4 ? C.acaciaDeep : "#748563";
   return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
-      <rect x="-3.5" y="-90" width="7" height="92" fill="#8B7355" />
-      <path d="M0 -78 l-24 -20 M0 -78 l25 -22 M0 -88 l-13 -20" stroke="#8B7355" strokeWidth="3" fill="none" strokeLinecap="round" />
-      {/* 樹冠：円を複数重ねた、もこもこした丸い塊 */}
-      <g fill={leaf}>
-        <circle cx="0" cy="-110" r="34" />
-        <circle cx="-28" cy="-98" r="26" opacity="0.94" />
-        <circle cx="30" cy="-100" r="27" opacity="0.92" />
-        <circle cx="-16" cy="-128" r="27" opacity="0.96" />
-        <circle cx="18" cy="-126" r="25" opacity="0.94" />
-        <circle cx="0" cy="-142" r="20" opacity="0.9" />
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <g className="swayt">
+        <rect x="-3.5" y="-90" width="7" height="92" fill="#8B7355" />
+        <path d="M0 -78 l-24 -20 M0 -78 l25 -22 M0 -88 l-13 -20" stroke="#8B7355" strokeWidth="3" fill="none" strokeLinecap="round" />
+        {/* 樹冠：円を複数重ねた、もこもこした丸い塊 */}
+        <g fill={leaf}>
+          <circle cx="0" cy="-110" r="34" />
+          <circle cx="-28" cy="-98" r="26" opacity="0.94" />
+          <circle cx="30" cy="-100" r="27" opacity="0.92" />
+          <circle cx="-16" cy="-128" r="27" opacity="0.96" />
+          <circle cx="18" cy="-126" r="25" opacity="0.94" />
+          <circle cx="0" cy="-142" r="20" opacity="0.9" />
+        </g>
       </g>
     </g>
   );
@@ -76,38 +78,44 @@ export function Tuft({ x, y, stage, rnd }: { x: number; y: number; stage: number
 export function Shrub({ x, y, s, stage }: { x: number; y: number; s: number; stage: number }) {
   const leaf = stage >= 4 ? C.acacia : stage >= 2 ? "#A2B08E" : "#C0B79F";
   return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
-      <path d="M-1 0 v-9 M-1 -5 l-5 -4 M-1 -6 l5 -5" stroke="#8B7355" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-      <ellipse cx="0" cy="-14" rx="11" ry="8" fill={leaf} />
-      <ellipse cx="-7" cy="-10" rx="7" ry="5.5" fill={leaf} opacity="0.9" />
-      <ellipse cx="7" cy="-11" rx="7.5" ry="5.5" fill={leaf} opacity="0.85" />
-      {stage >= 6 && <circle cx="5" cy="-18" r="1.8" fill="#E9E3C8" />}
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <g className="swayt">
+        <path d="M-1 0 v-9 M-1 -5 l-5 -4 M-1 -6 l5 -5" stroke="#8B7355" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        <ellipse cx="0" cy="-14" rx="11" ry="8" fill={leaf} />
+        <ellipse cx="-7" cy="-10" rx="7" ry="5.5" fill={leaf} opacity="0.9" />
+        <ellipse cx="7" cy="-11" rx="7.5" ry="5.5" fill={leaf} opacity="0.85" />
+        {stage >= 6 && <circle cx="5" cy="-18" r="1.8" fill="#E9E3C8" />}
+      </g>
     </g>
   );
 }
 
 export function Palm({ x, y, s }: { x: number; y: number; s: number }) {
   return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} className="swayt">
-      <path d="M0 0 q -3 -30 2 -54" stroke="#9C7A57" strokeWidth="5" fill="none" strokeLinecap="round" />
-      <g stroke={C.acaciaDeep} strokeWidth="3.4" fill="none" strokeLinecap="round">
-        <path d="M2 -54 q -16 -6 -26 4" /><path d="M2 -54 q 16 -8 27 2" />
-        <path d="M2 -54 q -12 -16 -22 -18" /><path d="M2 -54 q 13 -15 24 -16" />
-        <path d="M2 -54 q -2 -14 -6 -20" /><path d="M2 -54 q 4 -13 9 -18" />
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <g className="swayt">
+        <path d="M0 0 q -3 -30 2 -54" stroke="#9C7A57" strokeWidth="5" fill="none" strokeLinecap="round" />
+        <g stroke={C.acaciaDeep} strokeWidth="3.4" fill="none" strokeLinecap="round">
+          <path d="M2 -54 q -16 -6 -26 4" /><path d="M2 -54 q 16 -8 27 2" />
+          <path d="M2 -54 q -12 -16 -22 -18" /><path d="M2 -54 q 13 -15 24 -16" />
+          <path d="M2 -54 q -2 -14 -6 -20" /><path d="M2 -54 q 4 -13 9 -18" />
+        </g>
+        <circle cx="-2" cy="-49" r="2" fill="#C08B4A" /><circle cx="4" cy="-48" r="2" fill="#C08B4A" />
       </g>
-      <circle cx="-2" cy="-49" r="2" fill="#C08B4A" /><circle cx="4" cy="-48" r="2" fill="#C08B4A" />
     </g>
   );
 }
 
 export function Reed({ x, y, s, flip }: { x: number; y: number; s: number; flip: number }) {
   return (
-    <g transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`} className="swayt">
-      <g stroke={C.acaciaDeep} strokeWidth="1.8" fill="none" strokeLinecap="round">
-        <path d="M0 0 q 2 -12 1 -22" /><path d="M0 0 q -4 -11 -7 -18" /><path d="M0 0 q 7 -10 11 -16" />
+    <g transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`}>
+      <g className="swayt">
+        <g stroke={C.acaciaDeep} strokeWidth="1.8" fill="none" strokeLinecap="round">
+          <path d="M0 0 q 2 -12 1 -22" /><path d="M0 0 q -4 -11 -7 -18" /><path d="M0 0 q 7 -10 11 -16" />
+        </g>
+        <ellipse cx="1" cy="-24" rx="1.8" ry="4" fill="#B79E7A" />
+        <ellipse cx="-8" cy="-20" rx="1.6" ry="3.4" fill="#B79E7A" />
       </g>
-      <ellipse cx="1" cy="-24" rx="1.8" ry="4" fill="#B79E7A" />
-      <ellipse cx="-8" cy="-20" rx="1.6" ry="3.4" fill="#B79E7A" />
     </g>
   );
 }
