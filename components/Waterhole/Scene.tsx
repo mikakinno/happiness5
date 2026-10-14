@@ -4,6 +4,7 @@ import { C } from "./palette";
 import { Beast, type BeastSlot } from "./species";
 import { Acacia, ACACIAS, FarHerd, PALMS, Palm, REEDS, Reed, Shrub, SHRUBS, Tuft } from "./vegetation";
 import { Mame, Kinako } from "./mascots";
+import { publicConfig } from "../../lib/config";
 
 const MAX_DRAWN = 18;
 const X_MIN = 42;
@@ -86,8 +87,8 @@ export function Waterhole({ level, stage, present, timeOfDay, ripples, onSplash 
   }, [present]);
 
   return (
-    <svg viewBox="0 0 900 400" className="w-full block" role="img" aria-label="みんなの水場">
-      <title>みんなの水場</title>
+    <svg viewBox="0 0 900 400" className="w-full block" role="img" aria-label={publicConfig.appName}>
+      <title>{publicConfig.appName}</title>
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={sky[0]} /><stop offset="100%" stopColor={sky[1]} /></linearGradient>
         <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={C.sand} /><stop offset="100%" stopColor={C.sandDeep} /></linearGradient>

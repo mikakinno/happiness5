@@ -1,17 +1,18 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { serverConfig } from "../../../lib/config";
 
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: serverConfig.googleClientId,
+      clientSecret: serverConfig.googleClientSecret,
     }),
   ],
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: serverConfig.nextAuthSecret,
 };
 
 export default NextAuth(authOptions);

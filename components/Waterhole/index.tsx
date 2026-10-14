@@ -12,6 +12,7 @@ import { Drop, Stat, Toggle } from "./ui";
 import { C, weatherUI, WHY_TEXT } from "./palette";
 import type { DiaryEntry } from "../../pages/api/waterhole";
 import { fmtDate, fmtStamp } from "./format";
+import { publicConfig } from "../../lib/config";
 
 const TIME_OPTS: [TimeBand, string][] = [["dawn", "朝"], ["day", "昼"], ["dusk", "夕"], ["night", "夜"]];
 const ACTIVITY_OPTS: [Activity, string][] = [["quiet", "静か"], ["normal", "ふつう"], ["lively", "にぎやか"]];
@@ -81,8 +82,8 @@ export default function MinnaNoMizuba() {
       <header className="border-b" style={{ borderColor: C.line }}>
         <div className="max-w-3xl mx-auto px-5 h-14 flex items-center justify-between">
           <div className="flex items-baseline gap-2.5">
-            <span className="maru text-lg font-bold tracking-wide">みんなの水場</span>
-            <span className="text-xs" style={{ color: C.inkSoft }}>ハピネス5</span>
+            <span className="maru text-lg font-bold tracking-wide">{publicConfig.appName}</span>
+            <span className="text-xs" style={{ color: C.inkSoft }}>{publicConfig.productName}</span>
           </div>
           <Link href="/report" className="text-sm px-3 py-1.5 rounded-full border" style={{ borderColor: C.line, color: C.inkSoft }}>レポート</Link>
         </div>
@@ -140,7 +141,7 @@ export default function MinnaNoMizuba() {
             </div>
           ) : (
             <a
-              href={process.env.NEXT_PUBLIC_FORM_MIND}
+              href={publicConfig.formMind}
               target="_blank"
               rel="noopener noreferrer"
               onClick={splash}
@@ -152,7 +153,7 @@ export default function MinnaNoMizuba() {
             </a>
           )}
           <a
-            href={process.env.NEXT_PUBLIC_FORM_THANKS}
+            href={publicConfig.formThanks}
             target="_blank"
             rel="noopener noreferrer"
             onClick={splash}

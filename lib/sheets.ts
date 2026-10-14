@@ -6,9 +6,10 @@
 
 import { google } from "googleapis";
 import { parseSheetDate, toWeatherKey, parseSteps, type MindRow, type ThanksRow } from "./waterhole";
+import { serverConfig } from "./config";
 
 /* ------------------------------------------------------------
-   .env.local
+   .env.local（読み込みは lib/config.ts にまとめてある）
 
    GOOGLE_SERVICE_ACCOUNT_EMAIL=xxx@xxx.iam.gserviceaccount.com
    GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
@@ -24,22 +25,19 @@ import { parseSheetDate, toWeatherKey, parseSteps, type MindRow, type ThanksRow 
    閲覧権限が付与されていること。タブ名は実際のシートに合わせて確認済み。
    ------------------------------------------------------------ */
 
-const MIND_SHEET_ID = process.env.MIND_SHEET_ID!;
-const THANKS_SHEET_ID = process.env.THANKS_SHEET_ID!;
-const ROSTER_SHEET_ID = process.env.ROSTER_SHEET_ID!;
-const TAB_MIND = process.env.TAB_MIND || "ハピネス";
-const TAB_THANKS = process.env.TAB_THANKS || "フォームの回答 1";
-const TAB_ROSTER = process.env.TAB_ROSTER || "シート1";
+const MIND_SHEET_ID = serverConfig.mindSheetId;
+const THANKS_SHEET_ID = serverConfig.thanksSheetId;
+const ROSTER_SHEET_ID = serverConfig.rosterSheetId;
+const TAB_MIND = serverConfig.tabMind;
+const TAB_THANKS = serverConfig.tabThanks;
+const TAB_ROSTER = serverConfig.tabRoster;
 
-const TEST_NAMES = new Set(
-  (process.env.TEST_NAMES || "").split(",").map((s) => s.trim()).filter(Boolean)
-);
+const TEST_NAMES = new Set(serverConfig.testNames);
 
 function sheetsClient() {
   const auth = new google.auth.JWT({
-    email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    // Vercel の環境変数では改行が \n のまま入るため復元する
-    key: (process.env.GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+    email: serverConfig.serviceAccountEmail,
+    key: serverConfig.serviceAccountKey,
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
   return google.sheets({ version: "v4", auth });
